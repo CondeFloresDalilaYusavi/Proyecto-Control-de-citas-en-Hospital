@@ -1,0 +1,109 @@
+class Personal:
+    def __init__(self, nombre, apellido_paterno, apellido_materno, id_empleado):
+        self.nombre = nombre
+        self.apellido_paterno = apellido_paterno
+        self.apellido_materno = apellido_materno
+        self.id_empleado = id_empleado
+
+class Medico(Personal):
+    def __init__(self, nombre, apellido_paterno, apellido_materno, id_empleado):
+        super().__init__(nombre, apellido_paterno, apellido_materno, id_empleado)
+
+class Enfermero(Personal):
+    def __init__(self, nombre, apellido_paterno, apellido_materno, id_empleado):
+        super().__init__(nombre, apellido_paterno, apellido_materno, id_empleado)
+
+
+class Paciente:
+    def __init__(self, nombre, apellido_paterno, apellido_materno, id_paciente):
+        self.nombre = nombre
+        self.apellido_paterno = apellido_paterno
+        self.apellido_materno = apellido_materno
+        self.id_paciente = id_paciente
+
+
+class Area:
+    def __init__(self, nombre, medico):
+        self.nombre = nombre
+        self.medico = medico
+        self.camas = {}  
+
+    def agregar_cama(self, cama):
+        self.camas[cama.id_cama] = cama
+
+
+class Cama:
+    def __init__(self, id_cama, estado, paciente=None, enfermero=None):
+        self.id_cama = id_cama
+        self.estado = estado  
+        self.paciente = paciente
+        self.enfermero = enfermero
+
+
+def obtener_entrada_usuario(mensaje, tipo_entrada=str, valor_minimo=None, valor_maximo=None):
+    while True:
+        try:
+            entrada_usuario = tipo_entrada(input(mensaje))
+            if valor_minimo is not None and entrada_usuario < valor_minimo:
+                print(f"La entrada debe ser mayor o igual a {valor_minimo}")
+                continue
+            if valor_maximo is not None and entrada_usuario > valor_maximo:
+                print(f"La entrada debe ser menor o igual a {valor_maximo}")
+                continue
+            return entrada_usuario
+        except ValueError:
+            print("Entrada inválida. Por favor, inténtalo de nuevo.")
+
+
+def crear_paciente():
+    nombre = input("Nombre del paciente: ")
+    apellido_paterno = input("Apellido paterno: ")
+    apellido_materno = input("Apellido materno: ")
+    id_paciente = obtener_entrada_usuario("ID del paciente (entero): ", int, 1)
+    return Paciente(nombre, apellido_paterno, apellido_materno, id_paciente)
+
+def crear_personal(tipo_personal):
+    nombre = input(f"Nombre del {tipo_personal}: ")
+    apellido_paterno = input(f"Apellido paterno del {tipo_personal}: ")
+    apellido_materno = input(f"Apellido materno del {tipo_personal}: ")
+    id_empleado = obtener_entrada_usuario(f"ID del {tipo_personal} (entero): ", int, 1)
+    if tipo_personal.lower() == "médico":
+        return Medico(nombre, apellido_paterno, apellido_materno, id_empleado)
+    elif tipo_personal.lower() == "enfermero":
+        return Enfermero(nombre, apellido_paterno, apellido_materno, id_empleado)
+    else:
+        return None
+
+def crear_area():
+    nombre = input("Nombre del área: ")
+    medico = crear_personal("médico")
+    return Area(nombre, medico)
+
+
+def crear_cama(area):
+    id_cama = input("ID de la cama (ej. C1): ")
+    estado = input("Estado de la cama (ocupado/desocupado): ")
+    enfermero = crear_personal("enfermero")
+    return Cama(id_cama, estado, enfermero=enfermero)
+
+
+numero_areas = obtener_entrada_usuario("Número de áreas: ", int, 1)
+areas = {}
+for i in range(numero_areas):
+    area = crear_area()
+    areas[area.nombre] = area
+    numero_camas = obtener_entrada_usuario(f"Número de camas en {area.nombre}: ", int, 1)
+    for j in range(numero_camas):
+        cama = crear_cama(area)
+        area.agregar_cama(cama)
+
+
+numero_pacientes = obtener_entrada_usuario("Número de pacientes a registrar: ", int, 0)
+for i in range(numero_pacientes):
+    paciente = crear_paciente()
+
+
+for nombre_area, area in areas.items():
+    print(f"\nÁrea: {nombre_area}, Médico: {area.medico.nombre}")
+    for id_cama, cama in area.camas.items():
+        print(f"  Cama {id_cama}: Estado - {cama.estado}, Enfermero - {cama.enfermero.nombre if cama.enfermero else 'Ninguno'}")
